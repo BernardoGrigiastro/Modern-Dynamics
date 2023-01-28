@@ -18,31 +18,32 @@
  */
 package dev.technici4n.moderndynamics.client.model;
 
-import com.mojang.datafixers.util.Pair;
-import java.util.*;
+import dev.technici4n.moderndynamics.util.MdId;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
-import net.minecraft.client.renderer.block.model.BlockModel;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.resources.ResourceLocation;
 
 public class PipeUnbakedModel implements UnbakedModel {
-    private final ResourceLocation connectionNone;
-    private final ResourceLocation connectionPipe;
-    private final ResourceLocation connectionInventory;
+    private final Material baseTexture;
+    private final ResourceLocation connector;
+    private final ResourceLocation straightLine;
 
-    public PipeUnbakedModel(ResourceLocation connectionNone, ResourceLocation connectionPipe, ResourceLocation connectionInventory) {
-        this.connectionNone = connectionNone;
-        this.connectionPipe = connectionPipe;
-        this.connectionInventory = connectionInventory;
+    public PipeUnbakedModel(String pipeType) {
+        this.baseTexture = new Material(TextureAtlas.LOCATION_BLOCKS, MdId.of("pipe/" + pipeType + "/base"));
+        this.connector = MdId.of("pipe/" + pipeType + "/connector");
+        this.straightLine = MdId.of("pipe/" + pipeType + "/straight");
     }
 
-    public static BakedModel[] loadRotatedModels(ResourceLocation modelId, ModelBakery modelLoader) {
+    public static BakedModel[] loadRotatedModels(ResourceLocation modelId, ModelBaker modelLoader) {
         // Load side models
         BakedModel[] models = new BakedModel[6];
 
@@ -54,29 +55,25 @@ public class PipeUnbakedModel implements UnbakedModel {
     }
 
     @Override
-    public BakedModel bake(ModelBakery modelLoader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer,
-            ResourceLocation modelId) {
-        return new PipeBakedModel(
-                // Load transform from the vanilla block model
-                ((BlockModel) modelLoader.getModel(new ResourceLocation("block/cube"))).getTransforms(),
-                (AttachmentsBakedModel) modelLoader.bake(AttachmentsUnbakedModel.ID, BlockModelRotation.X0_Y0),
-                loadRotatedModels(connectionNone, modelLoader),
-                loadRotatedModels(connectionPipe, modelLoader),
-                loadRotatedModels(connectionInventory, modelLoader));
-    }
-
-    @Override
-    public Collection<Material> getMaterials(Function<ResourceLocation, UnbakedModel> unbakedModelGetter, Set<Pair<String, String>> set) {
-        List<Material> textures = new ArrayList<>();
-        textures.addAll(unbakedModelGetter.apply(AttachmentsUnbakedModel.ID).getMaterials(unbakedModelGetter, set));
-        textures.addAll(unbakedModelGetter.apply(connectionNone).getMaterials(unbakedModelGetter, set));
-        textures.addAll(unbakedModelGetter.apply(connectionPipe).getMaterials(unbakedModelGetter, set));
-        textures.addAll(unbakedModelGetter.apply(connectionInventory).getMaterials(unbakedModelGetter, set));
-        return textures;
-    }
-
-    @Override
     public Collection<ResourceLocation> getDependencies() {
-        return List.of(AttachmentsUnbakedModel.ID, connectionNone, connectionPipe, connectionInventory);
+        return List.of(connector, straightLine, AttachmentsUnbakedModel.ID);
     }
+
+    @Override
+    public void resolveParents(Function<ResourceLocation, UnbakedModel> unbakedModelGetter) {
+        unbakedModelGetter.apply(connector).resolveParents(unbakedModelGetter);
+        unbakedModelGetter.apply(straightLine).resolveParents(unbakedModelGetter);
+        unbakedModelGetter.apply(AttachmentsUnbakedModel.ID).resolveParents(unbakedModelGetter);
+    }
+
+    @Override
+    public BakedModel bake(ModelBaker modelBaker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState transform,
+            ResourceLocation location) {
+        return new PipeBakedModel(
+                spriteGetter.apply(baseTexture),
+                loadRotatedModels(connector, modelBaker),
+                loadRotatedModels(straightLine, modelBaker),
+                (AttachmentsBakedModel) modelBaker.bake(AttachmentsUnbakedModel.ID, BlockModelRotation.X0_Y0));
+    }
+
 }

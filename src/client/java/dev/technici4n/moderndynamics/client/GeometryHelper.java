@@ -16,13 +16,23 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package dev.technici4n.moderndynamics.init;
+package dev.technici4n.moderndynamics.client;
 
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
+import static net.minecraft.core.Direction.*;
 
-public class MdTags {
-    public static final TagKey<Item> WRENCHES = TagKey.create(Registries.ITEM, new ResourceLocation("c:wrenches"));
+import net.minecraft.core.Direction;
+
+public final class GeometryHelper {
+    private GeometryHelper() {
+    }
+
+    /**
+     * Vectors to the right of the face, i.e. the X axis in the XY plane of the
+     * face.
+     */
+    public static Direction[] FACE_RIGHT = new Direction[] { EAST, EAST, WEST, EAST, SOUTH, NORTH, };
+    /**
+     * Vectors to the up of the face, i.e. the Y axis in the XY plane of the face.
+     */
+    public static Direction[] FACE_UP = new Direction[] { SOUTH, NORTH, UP, UP, UP, UP, };
 }

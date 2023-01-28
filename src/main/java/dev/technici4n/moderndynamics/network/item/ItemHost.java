@@ -55,7 +55,6 @@ public class ItemHost extends NodeHost {
     private final List<TravelingItem> travelingItems = new ArrayList<>();
     private final List<ClientTravelingItem> clientTravelingItems = new ArrayList<>();
     private final long[] lastOperationTick = new long[6];
-    private final int[] roundRobinIndex = new int[6];
 
     public ItemHost(PipeBlockEntity pipe) {
         super(pipe);
@@ -221,7 +220,12 @@ public class ItemHost extends NodeHost {
                         long toTransfer = maxTransfer;
 
                         for (var path : paths) {
-                            var extractTarget = ItemStorage.SIDED.find(pipe.getLevel(), path.targetPos, path.path[path.path.length - 1]);
+                            // Don't allow attractors to pull from other attractors
+                            if (path.getEndAttachment(cache.level) instanceof ItemAttachedIo io && io.getType() == IoAttachmentType.ATTRACTOR) {
+                                continue;
+                            }
+
+                            var extractTarget = ItemStorage.SIDED.find(pipe.getLevel(), path.targetPos, path.getTargetBlockSide());
                             if (extractTarget != null) {
                                 // Make sure to check the filter at the endpoint.
                                 var endpointFilter = path.getEndFilter(cache.level);

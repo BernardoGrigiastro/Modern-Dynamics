@@ -31,15 +31,18 @@
     ],
     "jei_mod_plugin": [
       "dev.technici4n.moderndynamics.client.compat.jei.MdJeiPlugin"
+    ],
+    "emi": [
+      "dev.technici4n.moderndynamics.client.compat.emi.MdEmiPlugin"
     ]
   },
   "mixins": [
     "moderndynamics.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.14.9",
-    "fabric": ">=0.59.0",
-    "minecraft": "~1.19.1",
+    "fabricloader": ">=0.14.11",
+    "fabric-api": ">=0.68.1",
+    "minecraft": "~1.19.3",
     "java": ">=17",
     "team_reborn_energy": "*"
   }

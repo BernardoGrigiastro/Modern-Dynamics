@@ -26,7 +26,10 @@ import dev.technici4n.moderndynamics.debug.DebugToolItem;
 import dev.technici4n.moderndynamics.pipe.PipeItem;
 import dev.technici4n.moderndynamics.util.MdId;
 import dev.technici4n.moderndynamics.util.MdItemGroup;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 
 public class MdItems {
@@ -61,7 +64,8 @@ public class MdItems {
     public static final AttachmentItem FILTER = new IoAttachmentItem(MdAttachments.FILTER, IoAttachmentType.FILTER);
     public static final AttachmentItem INHIBITOR = new InhibitorAttachmentItem(MdAttachments.INHIBITOR);
 
-    public static final Item WRENCH = new Item(new Item.Properties().stacksTo(1).tab(MdItemGroup.getInstance()));
+    public static final Item WRENCH = new Item(new Item.Properties().stacksTo(1));
+
     public static final DebugToolItem DEBUG_TOOL = new DebugToolItem();
 
     public static final PipeItem[] ALL_PIPES = new PipeItem[] {
@@ -100,15 +104,26 @@ public class MdItems {
     };
 
     public static void init() {
+        CreativeModeTab MdCreativeTab = MdItemGroup.getInstance();
         for (var pipe : ALL_PIPES) {
-            Registry.register(Registry.ITEM, MdId.of(pipe.getBlock().id), pipe);
+            Registry.register(BuiltInRegistries.ITEM, MdId.of(pipe.getBlock().id), pipe);
+            ItemGroupEvents.modifyEntriesEvent(MdCreativeTab).register(content -> {
+                content.accept(pipe);
+            });
         }
 
         for (var attachmentItem : ALL_ATTACHMENTS) {
-            Registry.register(Registry.ITEM, MdId.of(attachmentItem.attachment.id), attachmentItem);
+            Registry.register(BuiltInRegistries.ITEM, MdId.of(attachmentItem.attachment.id), attachmentItem);
+            ItemGroupEvents.modifyEntriesEvent(MdCreativeTab).register(content -> {
+                content.accept(attachmentItem);
+            });
         }
 
-        Registry.register(Registry.ITEM, MdId.of("wrench"), WRENCH);
-        Registry.register(Registry.ITEM, MdId.of("debug_tool"), DEBUG_TOOL);
+        Registry.register(BuiltInRegistries.ITEM, MdId.of("wrench"), WRENCH);
+        Registry.register(BuiltInRegistries.ITEM, MdId.of("debug_tool"), DEBUG_TOOL);
+        ItemGroupEvents.modifyEntriesEvent(MdCreativeTab).register(content -> {
+            content.accept(WRENCH);
+            content.accept(DEBUG_TOOL);
+        });
     }
 }
